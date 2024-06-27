@@ -5,17 +5,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Favicon Links -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="icon" href="favicon.ico">
+  <link rel="manifest" href="site.webmanifest">
   <!-- Primary Meta Tags -->
   <title>MDX Combiner Pro</title>
   <meta name="title" content="MDX Combiner Pro">
   <meta name="description" content="Combine multiple MDX or MD files into a single file.">
-
-
-  <title>MDX Combiner Pro</title>
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yourwebsite.com/">
+  <meta property="og:title" content="MDX Combiner Pro">
+  <meta property="og:description" content="Combine multiple MDX or MD files into a single file.">
+  <meta property="og:image" content="https://yourwebsite.com/image.png">
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://yourwebsite.com/">
+  <meta property="twitter:title" content="MDX Combiner Pro">
+  <meta property="twitter:description" content="Combine multiple MDX or MD files into a single file.">
+  <meta property="twitter:image" content="https://yourwebsite.com/image.png">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -26,140 +37,86 @@
             vercel: {
               dark: '#121212',
               light: '#fff',
+              gradientStart: '#0F0C29',
+              gradientMiddle: '#302B63',
+              gradientEnd: '#24243E',
             },
           },
         },
       },
     }
   </script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="bg-vercel-dark text-vercel-light min-h-screen flex flex-col">
-  <div class="container mx-auto p-4 flex-grow">
-    <h1 class="text-3xl font-bold mb-4">MDX Combiner Pro</h1>
-
-    <div class="mb-4 mt-10 flex space-x-2">
-      <input type="file" id="mdxInput" multiple accept=".mdx,.md" class="hidden" />
-      <label for="mdxInput" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer">
-        Select MDX Files
-      </label>
-      <button id="combineButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-        Combine Files
+<body
+  class="bg-gradient-to-r from-vercel-gradientStart via-vercel-gradientMiddle to-vercel-gradientEnd text-vercel-light min-h-screen flex items-center justify-center">
+  <div class="container mx-auto p-4 flex-grow flex items-center justify-center">
+    <div class="w-full max-w-4xl bg-vercel-dark p-8 rounded-lg shadow-lg relative">
+      <div id="loadingIndicator"
+        class="hidden absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+      </div>
+      <h1 class="text-4xl font-bold mb-6 text-center">MDX Combiner Pro</h1>
+      <div class="mb-4 mt-10 flex flex-wrap space-x-2 justify-center">
+        <input type="file" id="mdxInput" multiple accept=".mdx,.md" class="hidden" />
+        <label for="mdxInput"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer shadow mb-2">
+          Select MDX Files
+        </label>
+        <button id="combineButton"
+          class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded shadow mb-2">
+          Combine Files
+        </button>
+        <button id="downloadButton"
+          class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded shadow mb-2" disabled>
+          Download Combined File
+        </button>
+      </div>
+      <div class="mb-4">
+        <label for="outputFormat" class="block mb-2">Output Format:</label>
+        <select id="outputFormat" class="bg-gray-700 text-white rounded p-2 w-full">
+          <option value="mdx">.mdx</option>
+          <option value="md">.md</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="separator" class="block mb-2">File Separator:</label>
+        <input type="text" id="separator" value="---" class="bg-gray-700 text-white rounded p-2 w-full">
+      </div>
+      <div class="mb-4">
+        <label for="filenamePrefix" class="block mb-2">Filename Prefix:</label>
+        <input type="text" id="filenamePrefix" value="combined_" class="bg-gray-700 text-white rounded p-2 w-full">
+      </div>
+      <textarea id="output" class="w-full h-64 p-2 bg-gray-800 text-white rounded mb-4" readonly></textarea>
+      <div id="fileList" class="text-sm mb-4"></div>
+      <!-- Button to toggle markdown rendering -->
+      <button id="renderMarkdownButton"
+        class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded shadow">
+        Render Markdown
       </button>
-      <button id="downloadButton" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded"
-        disabled>
-        Download Combined File
-      </button>
+      <!-- Container for rendered markdown -->
+      <div id="renderedMarkdown" class="mt-4 bg-gray-800 text-white p-4 rounded hidden"></div>
+      <span class="text-sm text-gray-400 block text-center">Created By Austin Spraggins</span>
+      <p class="text-sm text-gray-400 text-center">
+        <a href="https://github.com/spragginsdesigns/mdx-combinefiles-project"
+          class="text-blue-500 hover:text-blue-600">
+          View on GitHub
+        </a>
+      </p>
     </div>
-    <div class="mb-4">
-      <label for="outputFormat" class="block mb-2">Output Format:</label>
-      <select id="outputFormat" class="bg-gray-700 text-white rounded p-2">
-        <option value="mdx">.mdx</option>
-        <option value="md">.md</option>
-      </select>
-    </div>
-    <div class="mb-4">
-      <label for="separator" class="block mb-2">File Separator:</label>
-      <input type="text" id="separator" value="---" class="bg-gray-700 text-white rounded p-2 w-full">
-    </div>
-    <div class="mb-4">
-      <label for="filenamePrefix" class="block mb-2">Filename Prefix:</label>
-      <input type="text" id="filenamePrefix" value="combined_" class="bg-gray-700 text-white rounded p-2 w-full">
-    </div>
-    <textarea id="output" class="w-full h-64 p-2 bg-gray-800 text-white rounded mb-4" readonly></textarea>
-    <div id="fileList" class="text-sm"></div>
-    <span class="text-sm text-gray-400">Created By Austin Spraggins</span>
-    <p class="text-sm text-gray-400">
-      <a href="https://github.com/austinspraggins/mdx-combinefiles-project" class="text-blue-500 hover:text-blue-600">
-        View on GitHub
-      </a>
   </div>
-
+  <!-- Defer Scripts -->
+  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    const mdxInput = document.getElementById('mdxInput');
-    const combineButton = document.getElementById('combineButton');
-    const downloadButton = document.getElementById('downloadButton');
-    const output = document.getElementById('output');
-    const outputFormat = document.getElementById('outputFormat');
-    const separator = document.getElementById('separator');
-    const filenamePrefix = document.getElementById('filenamePrefix');
-    const fileList = document.getElementById('fileList');
-    let files = [];
-
-    mdxInput.addEventListener('change', (event) => {
-      files = Array.from(event.target.files);
-      updateFileList();
+    document.getElementById('renderMarkdownButton').addEventListener('click', function () {
+      const markdownText = document.getElementById('output').value;
+      const renderedHtml = marked.parse(markdownText);
+      const renderedMarkdownContainer = document.getElementById('renderedMarkdown');
+      renderedMarkdownContainer.innerHTML = renderedHtml;
+      renderedMarkdownContainer.classList.toggle('hidden');
     });
-
-    function updateFileList() {
-      fileList.innerHTML = '<h3 class="font-bold mb-2">Selected Files:</h3>';
-      files.forEach(file => {
-        fileList.innerHTML += `<div>${file.name}</div>`;
-      });
-    }
-
-    combineButton.addEventListener('click', combineFiles);
-    downloadButton.addEventListener('click', downloadCombinedFile);
-
-    function combineFiles() {
-      if (files.length === 0) {
-        alert('Please select MDX files first.');
-        return;
-      }
-
-      const readFilePromises = files.map(file => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve({ name: file.name, content: e.target.result });
-          reader.onerror = (e) => reject(e);
-          reader.readAsText(file);
-        });
-      });
-
-      Promise.all(readFilePromises)
-        .then(fileContents => {
-          const combinedContent = fileContents.map(file =>
-            `// File: ${file.name}\n\n${file.content}`
-          ).join(`\n\n${separator.value}\n\n`);
-          output.value = combinedContent;
-          downloadButton.disabled = false;
-        })
-        .catch(error => {
-          console.error('Error reading files:', error);
-          alert('An error occurred while reading the files.');
-        });
-    }
-
-    function downloadCombinedFile() {
-      const content = output.value;
-      if (!content) {
-        alert('No content to download. Please combine files first.');
-        return;
-      }
-
-      const blob = new Blob([content], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-
-      const commonPrefix = findCommonPrefix(files.map(f => f.name));
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const predictedName = `${filenamePrefix.value}${commonPrefix}_${timestamp}.${outputFormat.value}`;
-
-      link.download = predictedName;
-      link.click();
-      URL.revokeObjectURL(link.href);
-    }
-
-    function findCommonPrefix(filenames) {
-      if (filenames.length === 0) return '';
-      return filenames.reduce((prefix, name) => {
-        while (name.indexOf(prefix) !== 0) {
-          prefix = prefix.substring(0, prefix.length - 1);
-          if (prefix === '') return '';
-        }
-        return prefix;
-      });
-    }
   </script>
 </body>
 
